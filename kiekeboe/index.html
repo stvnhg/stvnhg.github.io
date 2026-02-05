@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiekeboe Collector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .comic-card { transition: transform 0.1s ease-in-out; }
+        .comic-card:active { transform: scale(0.95); }
+        .owned { border-color: #22c55e; background-color: #f0fdf4; }
+        .missing { border-color: #ef4444; opacity: 0.7; grayscale: 100%; }
+        .owned-badge { display: none; }
+        .owned .owned-badge { display: block; }
+        .owned img { filter: none; }
+        .missing img { filter: grayscale(100%); }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen pb-20">
+
+    <header class="bg-yellow-400 p-4 shadow-md sticky top-0 z-10">
+        <h1 class="text-xl font-bold text-center text-gray-800 uppercase tracking-wider">Kiekeboe Collectie</h1>
+        <div class="flex justify-center mt-3 gap-2">
+            <button onclick="filterComics('all')" class="bg-white px-4 py-1 rounded-full text-xs font-bold shadow-sm">ALLES</button>
+            <button onclick="filterComics('missing')" class="bg-red-500 text-white px-4 py-1 rounded-full text-xs font-bold shadow-sm">ZOEKEN</button>
+            <button onclick="filterComics('owned')" class="bg-green-600 text-white px-4 py-1 rounded-full text-xs font-bold shadow-sm">IK HEB</button>
+        </div>
+        <div class="mt-2 text-center text-[10px] text-gray-700 font-mono" id="stats">Laden...</div>
+    </header>
+
+    <main id="gallery" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 p-3">
+        <!-- Injected by JS -->
+    </main>
+
+    <script>
+        const comicData = [
+            { id: 1, title: "De Wollebollen" }, { id: 2, title: "De duivelse driehoek" }, { id: 3, title: "De dorpstiran van Boeloe Boeloe" }, { id: 4, title: "De onthoofde sfinx" }, { id: 5, title: "Tegen de sterren op" },
+            { id: 6, title: "Kiekeboe in Carré" }, { id: 7, title: "De schat van Mata Hari" }, { id: 8, title: "De Haar-Tisten" }, { id: 9, title: "De zwarte Zonnekoning" }, { id: 10, title: "De doedelzak van Mac Reel" },
+            { id: 11, title: "Spoken in huis" }, { id: 12, title: "De Trawanten van Spih" }, { id: 13, title: "Kies Kiekeboe" }, { id: 14, title: "Een zakje chips" }, { id: 15, title: "Mysterie op Spell-Deprik" },
+            { id: 16, title: "Meesterwerken bij de vleet" }, { id: 17, title: "Fanny Girl" }, { id: 18, title: "Bing Bong" }, { id: 19, title: "Geeeeef acht!" }, { id: 20, title: "De Ka-Fhaar" },
+            { id: 21, title: "De pili-pili pillen" }, { id: 22, title: "De omgekeerde piramide" }, { id: 23, title: "De snor van Kiekeboe" }, { id: 24, title: "De anonieme smulpapen" }, { id: 25, title: "Het plan SStoeffer" },
+            { id: 26, title: "Album 26" }, { id: 27, title: "De getatoeëerde mossel" }, { id: 28, title: "Over koetjes en kalfjes" }, { id: 29, title: "De vete van de kastaars" }, { id: 30, title: "Het lot van de familie" },
+            { id: 31, title: "Klaas is dood" }, { id: 32, title: "Het edelweiss-mysterie" }, { id: 33, title: "De eenzame ridder" }, { id: 34, title: "De kus van een clown" }, { id: 35, title: "Kiekeboe in het kwadraat" },
+            { id: 36, title: "De zwarte keizer" }, { id: 37, title: "Jeanne Darm" }, { id: 38, title: "Prettige feestdagen" }, { id: 39, title: "De bende van de bonobo's" }, { id: 40, title: "De vette vlieg" },
+            { id: 41, title: "De babbelpil" }, { id: 42, title: "De wraak van een banaan" }, { id: 43, title: "De droom van Fanny" }, { id: 44, title: "Het witte bloed" }, { id: 45, title: "Een koud kunstje" },
+            { id: 46, title: "Konstantinopel" }, { id: 47, title: "De vrolijke vagebond" }, { id: 48, title: "De verborgen agenda" }, { id: 49, title: "De wraak van de mummie" }, { id: 50, title: "Afspraak in de hel" },
+            { id: 51, title: "Met de Franse slag" }, { id: 52, title: "De rammelende ridders" }, { id: 53, title: "De kastaar van de kassa" }, { id: 54, title: "Gedonder om een drol" }, { id: 55, title: "Schroot" },
+            { id: 56, title: "De taart" }, { id: 57, title: "Zeg het met bloemen" }, { id: 58, title: "Haaiman" }, { id: 59, title: "De amoureuze amazone" }, { id: 60, title: "Het Zip-virus" },
+            { id: 61, title: "De onweerstaanbare man" }, { id: 62, title: "De zes sterren" }, { id: 63, title: "Moet er nog sneeuw zijn?" }, { id: 64, title: "De onmogelijke opdracht" }, { id: 65, title: "De snor van Kiekeboe (heruitgave)" },
+            { id: 66, title: "De koddige kater" }, { id: 67, title: "Het geheim van de kousenband" }, { id: 68, title: "Thantomass" }, { id: 69, title: "Zand erover" }, { id: 70, title: "Witter dan wit" },
+            { id: 71, title: "Kiekebanus" }, { id: 72, title: "Het dertiende symbool" }, { id: 73, title: "De Aqua-rel" }, { id: 74, title: "De wereld volgens Fanny" }, { id: 75, title: "Het spook van de opera" },
+            { id: 76, title: "Kiekeboe in de war" }, { id: 77, title: "Dédé la Canaille" }, { id: 78, title: "De baby-boemer" }, { id: 79, title: "De vliegende koffer" }, { id: 80, title: "De kus van de vampier" },
+            { id: 81, title: "Blond en blauw" }, { id: 82, title: "De spray-historie" }, { id: 83, title: "Lang zullen ze leven" }, { id: 84, title: "Het lijk van de opera" }, { id: 85, title: "In het spoor van de gnoe" },
+            { id: 86, title: "De tralies van de lach" }, { id: 87, title: "De snotneuzen" }, { id: 88, title: "Floepskamp" }, { id: 89, title: "De heren van schemermeer" }, { id: 90, title: "De drie musketiers" },
+            { id: 91, title: "De bende van de kerstman" }, { id: 92, title: "De eenzame herder" }, { id: 93, title: "In vuur en vlam" }, { id: 94, title: "Taxidienst" }, { id: 95, title: "Alles kits" },
+            { id: 96, title: "De heilige koe" }, { id: 97, title: "De sprekende muts" }, { id: 98, title: "De kop van de mummie" }, { id: 99, title: "Mona de musical" }, { id: 100, title: "Honderd op een rij" },
+            { id: 101, title: "In troebel water" }, { id: 102, title: "De onzichtbare ridders" }, { id: 103, title: "Geen rook zonder vuur" }, { id: 104, title: "De kassa van de kastaar" }, { id: 105, title: "Seks en de stad" },
+            { id: 106, title: "Vrouwen komen van Mars" }, { id: 107, title: "Tonio de tovenaar" }, { id: 108, title: "De snor van de kastaar" }, { id: 109, title: "Drie vliegen in één klap" }, { id: 110, title: "De butler heeft het gedaan" },
+            { id: 111, title: "De snottebel" }, { id: 112, title: "En in Brussel eet men garnaal" }, { id: 113, title: "De wereld van Kiekeboe" }, { id: 114, title: "Omtrent Kiekeboe" }, { id: 115, title: "De goudvis van de opera" },
+            { id: 116, title: "De kapper van de oper" }, { id: 117, title: "De bende van de bonobo's (her)" }, { id: 118, title: "Kiekeboe 118" }, { id: 119, title: "Geeeeef acht! (her)" }, { id: 120, title: "De kus van de vlieg" },
+            { id: 121, title: "De snor van Fanny" }, { id: 122, title: "De vette gans" }, { id: 123, title: "De droom van Charlotte" }, { id: 124, title: "De onthoofde kastaar" }, { id: 125, title: "Vrouwen komen van Mars (her)" },
+            { id: 126, title: "Tiende van de tiende" }, { id: 127, title: "De anonieme kastaar" }, { id: 128, title: "Niet van gisteren" }, { id: 129, title: "In de hemel is geen bier" }, { id: 130, title: "De snor van Kiekeboe (her)" },
+            { id: 131, title: "Omtrent Fanny" }, { id: 132, title: "Alle eendjes" }, { id: 133, title: "Een echte Van Gogh" }, { id: 134, title: "De snotneus van de opera" }, { id: 135, title: "Code zwart" },
+            { id: 136, title: "De kassa van de oper" }, { id: 137, title: "Bistro 't weatertje" }, { id: 138, title: "Geen rook zonder vuur (her)" }, { id: 139, title: "De heren van de lach" }, { id: 140, title: "Bubbelbad" },
+            { id: 141, title: "De snotneus van de kastaar" }, { id: 142, title: "Tot op het bot" }, { id: 143, title: "De snor van Charlotte" }, { id: 144, title: "De onzichtbare kastaar" }, { id: 145, title: "Kiekeboe in de war (her)" },
+            { id: 146, title: "De koddige kastaar" }, { id: 147, title: "Dede la canaille (her)" }, { id: 148, title: "De baby van de opera" }, { id: 149, title: "Blond en blauw (her)" }, { id: 150, title: "Kiekebanus (her)" },
+            { id: 151, title: "Dood wakker worden" }, { id: 152, title: "Niet van gisteren (her)" }, { id: 153, title: "De koddige mummie" }, { id: 154, title: "Patiënt Zero" }, { id: 155, title: "Onvervalst Vals" },
+            { id: 156, title: "Salami" }, { id: 157, title: "De butler heeft het gedaan (her)" }, { id: 158, title: "BlauwBlauw" }, { id: 159, title: "In Troebel Water (her)" }, { id: 160, title: "Iemand moet het doen" },
+            { id: 161, title: "Achteraf bekeken" }, { id: 162, title: "Kind van de rekening" }, { id: 163, title: "Loft met zwembad" }, { id: 164, title: "Seizoensfinale" }, { id: 165, title: "Camping Vital" },
+            { id: 166, title: "Systeem Trash" }, { id: 167, title: "Nopelpop" }, { id: 168, title: "Pittig gestoord" }
+        ];
+
+        let ownedComics = JSON.parse(localStorage.getItem('kiekeboe_owned')) || [];
+        let currentFilter = 'all';
+
+        function renderGallery(filter = 'all') {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = '';
+            
+            comicData.forEach(comic => {
+                const isOwned = ownedComics.includes(comic.id);
+                if (filter === 'missing' && isOwned) return;
+                if (filter === 'owned' && !isOwned) return;
+
+                const card = document.createElement('div');
+                card.className = `comic-card bg-white rounded shadow-sm border-2 p-1 relative cursor-pointer ${isOwned ? 'owned' : 'missing'}`;
+                card.onclick = () => toggleOwned(comic.id);
+
+                card.innerHTML = `
+                    <div class="absolute top-1 right-1 bg-green-500 text-white rounded-full p-0.5 z-20 owned-badge shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <img src="covers/${comic.id}.jpg" 
+                         onerror="this.src='https://placehold.co/150x210?text=${comic.id}'"
+                         alt="${comic.title}" 
+                         class="w-full aspect-[2/3] object-cover rounded-sm mb-1">
+                    <div class="px-1">
+                        <p class="text-[9px] font-bold text-gray-400">#${comic.id}</p>
+                        <h2 class="text-[10px] font-bold leading-tight truncate text-gray-800">${comic.title}</h2>
+                    </div>
+                `;
+                gallery.appendChild(card);
+            });
+            updateStats();
+        }
+
+        function toggleOwned(id) {
+            if (ownedComics.includes(id)) {
+                ownedComics = ownedComics.filter(item => item !== id);
+            } else {
+                ownedComics.push(id);
+            }
+            localStorage.setItem('kiekeboe_owned', JSON.stringify(ownedComics));
+            renderGallery(currentFilter);
+        }
+
+        function filterComics(type) {
+            currentFilter = type;
+            renderGallery(type);
+        }
+
+        function updateStats() {
+            const total = comicData.length;
+            const owned = ownedComics.length;
+            document.getElementById('stats').innerText = `${owned} VAN DE ${total} ALBUMS IN BEZIT`;
+        }
+
+        renderGallery();
+    </script>
+</body>
+</html>
